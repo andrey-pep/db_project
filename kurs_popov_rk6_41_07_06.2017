@@ -1,0 +1,296 @@
+-- MySQL Administrator dump 1.4
+--
+-- ------------------------------------------------------
+-- Server version	5.5.25
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+
+
+--
+-- Create schema study_projects
+--
+
+CREATE DATABASE IF NOT EXISTS study_projects;
+USE study_projects;
+
+--
+-- Definition of table `avg_marks`
+--
+
+DROP TABLE IF EXISTS `avg_marks`;
+CREATE TABLE `avg_marks` (
+  `o_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `t_id` int(10) unsigned NOT NULL,
+  `subject_name` varchar(45) NOT NULL,
+  `o_group` varchar(45) NOT NULL,
+  `avg_mark` int(10) unsigned NOT NULL,
+  `o_year` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`o_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `avg_marks`
+--
+
+/*!40000 ALTER TABLE `avg_marks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `avg_marks` ENABLE KEYS */;
+
+
+--
+-- Definition of table `commision`
+--
+
+DROP TABLE IF EXISTS `commision`;
+CREATE TABLE `commision` (
+  `com_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `t_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`com_id`,`t_id`),
+  KEY `t_id` (`t_id`),
+  CONSTRAINT `t_id` FOREIGN KEY (`t_id`) REFERENCES `teachers` (`t_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `commision`
+--
+
+/*!40000 ALTER TABLE `commision` DISABLE KEYS */;
+INSERT INTO `commision` (`com_id`,`t_id`) VALUES 
+ (1,1),
+ (2,1),
+ (5,1),
+ (6,1),
+ (7,1),
+ (1,2),
+ (5,2),
+ (6,2),
+ (2,3),
+ (3,3),
+ (4,3),
+ (3,4),
+ (4,4),
+ (3,5),
+ (5,6),
+ (7,6);
+/*!40000 ALTER TABLE `commision` ENABLE KEYS */;
+
+
+--
+-- Definition of table `project`
+--
+
+DROP TABLE IF EXISTS `project`;
+CREATE TABLE `project` (
+  `pr_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `finish_date` datetime NOT NULL,
+  `mark` int(10) unsigned DEFAULT NULL,
+  `subject` varchar(45) NOT NULL,
+  `Record_book_num` int(10) unsigned DEFAULT NULL,
+  `t_id` int(10) unsigned NOT NULL,
+  `thema` varchar(45) NOT NULL,
+  PRIMARY KEY (`pr_id`),
+  KEY `Record_book_num` (`Record_book_num`),
+  KEY `teacher_id` (`t_id`),
+  CONSTRAINT `Record_book_num` FOREIGN KEY (`Record_book_num`) REFERENCES `student` (`Record_book_num`),
+  CONSTRAINT `teacher_id` FOREIGN KEY (`t_id`) REFERENCES `teachers` (`t_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `project`
+--
+
+/*!40000 ALTER TABLE `project` DISABLE KEYS */;
+INSERT INTO `project` (`pr_id`,`finish_date`,`mark`,`subject`,`Record_book_num`,`t_id`,`thema`) VALUES 
+ (2,'2017-06-01 00:00:00',NULL,'Физика',3,1,'Элементарные частицы'),
+ (3,'2017-06-01 00:00:00',NULL,'Физика',4,2,'Теория относительности'),
+ (4,'2017-06-01 00:00:00',NULL,'Начертательная геометрия',5,3,'Призмы'),
+ (5,'2016-06-01 00:00:00',NULL,'Математика',5,2,'Многочлены Чебышева и их основные свойства'),
+ (6,'2016-06-01 00:00:00',NULL,'Начертательная геометрия',6,3,'Масштабы'),
+ (7,'2015-01-20 00:00:00',NULL,'Базы данных',7,4,'Учебные проекты'),
+ (8,'2015-01-20 00:00:00',NULL,'Базы данных',8,5,'Ресторан'),
+ (9,'2015-01-20 00:00:00',NULL,'Математика',9,2,'Эйлеровы графы'),
+ (10,'2015-01-20 00:00:00',NULL,'Математика',10,3,'Численные методы решения уравнений');
+/*!40000 ALTER TABLE `project` ENABLE KEYS */;
+
+
+--
+-- Definition of table `protocol`
+--
+
+DROP TABLE IF EXISTS `protocol`;
+CREATE TABLE `protocol` (
+  `p_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `audience` varchar(15) NOT NULL,
+  `date_of_ex` datetime NOT NULL,
+  `com_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`p_id`),
+  KEY `com_id` (`com_id`),
+  CONSTRAINT `com_id` FOREIGN KEY (`com_id`) REFERENCES `commision` (`com_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `protocol`
+--
+
+/*!40000 ALTER TABLE `protocol` DISABLE KEYS */;
+INSERT INTO `protocol` (`p_id`,`audience`,`date_of_ex`,`com_id`) VALUES 
+ (1,'205','2017-06-01 00:00:00',1),
+ (2,'205','2017-06-01 00:00:00',2),
+ (3,'304','2017-06-01 00:00:00',3),
+ (4,'111','2016-06-01 00:00:00',4),
+ (5,'505','2016-06-01 00:00:00',5),
+ (6,'201','2015-01-20 00:00:00',6),
+ (7,'201','2015-01-20 00:00:00',7),
+ (8,'403','2015-01-20 00:00:00',1);
+/*!40000 ALTER TABLE `protocol` ENABLE KEYS */;
+
+
+--
+-- Definition of table `protocol_string`
+--
+
+DROP TABLE IF EXISTS `protocol_string`;
+CREATE TABLE `protocol_string` (
+  `ps_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mark` varchar(45) NOT NULL,
+  `Record_book_num` int(10) unsigned NOT NULL,
+  `p_id` int(10) unsigned NOT NULL,
+  `thema` varchar(45) DEFAULT NULL,
+  `pr_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`ps_id`),
+  KEY `FK_protocol_string_1` (`Record_book_num`),
+  KEY `p_id` (`p_id`),
+  KEY `FK_protocol_string_3` (`pr_id`),
+  CONSTRAINT `FK_protocol_string_1` FOREIGN KEY (`Record_book_num`) REFERENCES `student` (`Record_book_num`),
+  CONSTRAINT `FK_protocol_string_3` FOREIGN KEY (`pr_id`) REFERENCES `project` (`pr_id`),
+  CONSTRAINT `p_id` FOREIGN KEY (`p_id`) REFERENCES `protocol` (`p_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `protocol_string`
+--
+
+/*!40000 ALTER TABLE `protocol_string` DISABLE KEYS */;
+INSERT INTO `protocol_string` (`ps_id`,`mark`,`Record_book_num`,`p_id`,`thema`,`pr_id`) VALUES 
+ (0,'5',5,8,'Многочлены Чебышева и их основные свойства',5),
+ (1,'4',3,1,'Элементарные частицы',2),
+ (2,'3',4,1,'Теория относительности',3),
+ (3,'5',5,2,'Призмы',4),
+ (4,'4',6,3,'Масштабы',6),
+ (5,'2',7,4,'Учебные проекты',7),
+ (6,'3',8,5,'Ресторан',8),
+ (7,'4',9,6,'Эйлеровы графы',9),
+ (13,'5',10,8,'Численные методы решения уравнений',10);
+/*!40000 ALTER TABLE `protocol_string` ENABLE KEYS */;
+
+
+--
+-- Definition of table `student`
+--
+
+DROP TABLE IF EXISTS `student`;
+CREATE TABLE `student` (
+  `Record_book_num` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `Birthday` datetime NOT NULL,
+  `Group_name` varchar(15) NOT NULL,
+  `Last_Name` varchar(45) NOT NULL,
+  PRIMARY KEY (`Record_book_num`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `student`
+--
+
+/*!40000 ALTER TABLE `student` DISABLE KEYS */;
+INSERT INTO `student` (`Record_book_num`,`Birthday`,`Group_name`,`Last_Name`) VALUES 
+ (3,'1997-08-12 00:00:00','RK6-41','Иванов'),
+ (4,'1997-06-24 00:00:00','RK6-41','Сидоров'),
+ (5,'1997-02-20 00:00:00','RK6-41','Тяпкин'),
+ (6,'1997-10-20 00:00:00','RK6-42','Самсонов'),
+ (7,'1997-05-28 00:00:00','RK6-42','Дроздов'),
+ (8,'1994-02-02 00:00:00','RK6-42','Никонов'),
+ (9,'1995-03-03 00:00:00','RK6-43','Тимирязев'),
+ (10,'1995-11-11 00:00:00','RK6-43','Ляпкин'),
+ (11,'1997-09-12 00:00:00','RK6-43','Третьяков');
+/*!40000 ALTER TABLE `student` ENABLE KEYS */;
+
+
+--
+-- Definition of table `teachers`
+--
+
+DROP TABLE IF EXISTS `teachers`;
+CREATE TABLE `teachers` (
+  `t_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `last_name` varchar(45) NOT NULL,
+  `Birthdate` datetime NOT NULL,
+  `Pulpit_num` int(10) unsigned NOT NULL,
+  `St_work_date` datetime NOT NULL,
+  PRIMARY KEY (`t_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `teachers`
+--
+
+/*!40000 ALTER TABLE `teachers` DISABLE KEYS */;
+INSERT INTO `teachers` (`t_id`,`last_name`,`Birthdate`,`Pulpit_num`,`St_work_date`) VALUES 
+ (1,'Татаринов','1979-03-21 00:00:00',1,'2000-04-22 00:00:00'),
+ (2,'Богданов','1965-07-20 00:00:00',2,'2001-03-17 00:00:00'),
+ (3,'Тарасов','1955-03-20 00:00:00',3,'1999-01-28 00:00:00'),
+ (4,'Ильин','1978-07-17 00:00:00',1,'1999-02-20 00:00:00'),
+ (5,'Прокопенко','1956-02-20 00:00:00',2,'2002-04-22 00:00:00'),
+ (6,'Олежко','1974-03-05 00:00:00',4,'2002-04-22 00:00:00'),
+ (7,'Суматохин','1944-04-05 00:00:00',5,'1985-02-03 00:00:00');
+/*!40000 ALTER TABLE `teachers` ENABLE KEYS */;
+
+
+--
+-- Definition of procedure `Otchet`
+--
+
+DROP PROCEDURE IF EXISTS `Otchet`;
+
+DELIMITER $$
+
+/*!50003 SET @TEMP_SQL_MODE=@@SQL_MODE, SQL_MODE='' */ $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Otchet`(O_year integer, O_subject varchar(45))
+BEGIN
+    DECLARE thema, to_id, subject_name, o_group varchar(45);
+    DECLARE avg_mark float;
+    DECLARE DONE integer DEFAULT 0;
+    DECLARE C1 CURSOR FOR
+        SELECT teachers.t_id, project.subject, Group_name, AVG(protocol_string.mark)
+        FROM protocol JOIN protocol_string USING(p_id) JOIN student USING(Record_book_num) JOIN commision USING(com_id) JOIN teachers USING(t_id) JOIN project USING(pr_id)
+        WHERE YEAR(date_of_ex) = O_year AND project.subject = O_subject
+        GROUP BY project.subject, project.t_id;
+    DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET DONE = 1;
+    OPEN C1;
+    WHILE (DONE = 0) DO
+        FETCH C1 INTO thema, to_id, subject_name, o_group, avg_mark;
+        IF (DONE = 0) THEN
+            INSERT INTO avg_marks VALUES(NULL, to_id, subject_name, o_group, avg_mark, O_year);
+        END IF;
+    END WHILE;
+    CLOSE C1;
+END $$
+/*!50003 SET SESSION SQL_MODE=@TEMP_SQL_MODE */  $$
+
+DELIMITER ;
+
+
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
