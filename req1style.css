@@ -1,0 +1,37 @@
+body {
+	text-align: center;
+	font-style: georgia;
+	color: #0000FF;
+}
+
+table {
+	border-spacing: 5px;
+	width: 100%;
+	border: 3px solid;
+	border-radius: 5px;
+}
+
+td {
+	text-align: center;
+	font-size: 20px;
+	transition-duration: 200ms;
+	transition-timing-function: ease;
+	transition-property: box-shadow;
+}
+
+td:hover {
+	box-shadow: 0px 2px 10px;
+}
+
+tbody td {
+	border: 1px solid;
+	
+	
+}
+
+thead td {
+	background-color: #87CEFA;
+	border-radius: 5px;
+	border-bottom: 2px solid;
+	font-weight: bold;
+}
