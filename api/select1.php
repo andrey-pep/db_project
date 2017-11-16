@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<link rel="stylesheet" type="text/css" href="http://localhost/Stylesheets/req1style.css">
+	<link rel="stylesheet" type="text/css" href="http://home/andrey/.www/www/Stylesheets/req1style.css">
 </head>
 <body>
 <?php
