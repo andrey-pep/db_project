@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"time"
-	"fmt"
+	//"fmt"
 	"html/template"
 	"./dbwork"
 	"database/sql"
@@ -37,15 +37,23 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	DB := dbwork.Connect()	//коннект к базе, до этого нужно сделать авторизацию
 	MC := &MainController{ DataBase : DB, UsrGroup : "User" }	//создаю объект с контроллером, в котором хранятся коннект к бд и пользователь, опцианально, мб уберу
 	out := reflect.ValueOf(MC).MethodByName(r.URL.Query().Get("action")).Call([]reflect.Value{reflect.ValueOf(r)})	//выполнение самого запроса, пришлось немного с рефлектом поебаца
-	if out[1].IsNil() {
-		fmt.Fprintf(w, "no data")
+	
+	if reflect.ValueOf(out[1].Interface()).Len() == 0 {
+		t := template.Must(template.ParseFiles("public/nodata.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
 		return
 	}
 	tmplFile := Templates[r.URL.Query().Get("action")]
 	t := template.Must(template.ParseFiles("public/" + tmplFile))
 	output := PrepareForOut(out[1])
 	if err := t.Execute(w, output); err != nil {
-		panic(err)
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
 	}
 }
 
