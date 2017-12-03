@@ -2,6 +2,7 @@
 <head>
 	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+	<script src="public/main.js"></script>
 </head>
 <body bgcolor = #DEE9F9>
 <table border=0 width=100%> 
@@ -26,6 +27,8 @@
 </div>
 <tr>
 <td align=center>
+	<input class="but" type="submit" value="Запрос 1" onclick="showBlock('select1');">
+	<div id="select1" style="display: none;">
     <form action="select" method="GET" name="select1" target="table" onsubmit="show('block')">
 		<p><label>Ведомость группы по дисциплине</label>
 			<input class="texti" name="c_year" required type="text" pattern="[1-9][0-9]{3}" placeholder="2018">
@@ -35,7 +38,10 @@
 		<input class="but" type="reset" value="Сброс">
 		<input type="hidden" name="action" value="Req1">
 	</form>
+	</div>
 	</td><td align=center>
+	<input class="but" type="submit" value="Запрос 2" onclick="showBlock('select2');">
+	<div id="select2" style="display: none;">
 	<form action="select" method="GET" name="select2" target="table" onsubmit="show('block')">
 		<p><label>Составить отчёт о проектах sпо дисциплине. Выберете название предмета: </label>
 		<select class="quali" name="c_subj">
@@ -48,30 +54,47 @@
 		<input class="but" type="reset" value="Сброс">
 		<input type="hidden" name="action" value="Req2">
 	</form>
+	</div>
 	</td>
 <td align=center>
+	<input class="but" type="submit" value="Запрос 3" onclick="showBlock('select3');">
+	<div id="select3" style="display: none;">
 	<form action="http://localhost/api/select3.php" method="GET" name="select3" target="table" onsubmit="show('block')">
-	<p><label>Показать все сведения о самом молодом преподавателе</label>
+	<p><label>Показать все сведения о самом молодом преподавателе</label></p>
 	<input class="but" type="submit" value="Выполнить">
 	</form>
+	</div>
 	</td>
 </tr>
 <tr>
-<td align=center><form action="http://localhost/api/select4.php" method="GET" name="select4" target="table" onsubmit="show('block')">
-	<p><label>Показать все сведения о преподавателях, которые не вели ни одного проекта</label>
-	<input class="but" type="submit" value="Выполнить">
-	</form></td>
 <td align=center>
+	<input class="but" type="submit" value="Запрос 4" onclick="showBlock('select4');">
+	<div id="select4" style="display: none;">
+	<form action="http://localhost/api/select4.php" method="GET" name="select4" target="table" onsubmit="show('block')">
+	<p><label>Показать все сведения о преподавателях, которые не вели ни одного проекта</label></p>
+	<input class="but" type="submit" value="Выполнить">
+	</form>
+	</div>
+	</td>
+<td align=center>
+	<input class="but" type="submit" value="Запрос 5" onclick="showBlock('select5');">
+	<div id="select5" style="display: none;">
     <form action="http://localhost/api/select5.php" method="GET" name="select5" target="table" onsubmit="show('block')">
 		<p><label>Преподаватели без проектов в заданном году. Введите год в формате ГГГГ: </label><input class="texti" name="c_year" required type="text" pattern="[1-9][0-9]{3}" placeholder="2018"></p>
 		<input class="but" type="submit" value="Выполнить">
 		<input class="but" type="reset" value="Сброс">
 	</form>
+	</div>
 </td>
-<td align=center><form action="http://localhost/api/select6.php" method="GET" name="select6" target="table" onsubmit="show('block')">
-	<p><label>Показать все сведения о преподавателе, который вёл больше всех студентов</label>
+<td align=center>
+	<input class="but" type="submit" value="Запрос 6" onclick="showBlock('select6');">
+	<div id="select6" style="display: none;">
+	<form action="http://localhost/api/select6.php" method="GET" name="select6" target="table" onsubmit="show('block')">
+	<p><label>Показать все сведения о преподавателе, который вёл больше всех студентов</label></p>
 	<input class="but" type="submit" value="Выполнить">
-	</form></td>
+	</form>
+	</div>
+	</td>
 </tr>
 
 </tbody>
