@@ -27,13 +27,16 @@
 <tr>
 <td align=center>
     <form action="select" method="GET" name="select1" target="table" onsubmit="show('block')">
-		<p><label>Составить отчёт о защите за год. Введите год в формате ГГГГ: </label><input class="texti" name="c_year" required type="text" pattern="[1-9][0-9]{3}" placeholder="2018"></p>
+		<p><label>Ведомость группы по дисциплине</label>
+			<input class="texti" name="c_year" required type="text" pattern="[1-9][0-9]{3}" placeholder="2018">
+			<input class="texti" name="g_index" required type="text" pattern ="[az-Az]-[0-9]" placeholder="RK6-41">
+		</p>
 		<input class="but" type="submit" value="Выполнить">
 		<input class="but" type="reset" value="Сброс">
-		<input type="hidden" name="select1" value="1">
+		<input type="hidden" name="action" value="Req1">
 	</form>
 	</td><td align=center>
-	<form action="http://localhost/api/select2.php" method="GET" name="select2" target="table" onsubmit="show('block')">
+	<form action="select" method="GET" name="select2" target="table" onsubmit="show('block')">
 		<p><label>Составить отчёт о проектах sпо дисциплине. Выберете название предмета: </label>
 		<select class="quali" name="c_subj">
 			<option value="Физика">Физика</option>
@@ -43,6 +46,7 @@
 		</select></p></p>
 		<input class="but" type="submit" value="Выполнить">
 		<input class="but" type="reset" value="Сброс">
+		<input type="hidden" name="action" value="Req2">
 	</form>
 	</td>
 <td align=center>
