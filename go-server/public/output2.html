@@ -1,0 +1,28 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	<form action="index" method="GET" name="back"> 
+		<input class="but" type="submit" value="Назад"> 
+	</form> 
+	<table>
+	<tbody>
+		<tr>
+			<td align="center">Id проекта</td>
+			<td align="center">Тема</td>
+			<td align="center">Номер зачётной книжки</td>
+			<td align="center">Фамилия</td>
+		</tr>
+		<tr>
+			{{ range $index, $elem := . }}
+			<td align="center">{{$elem.ProjectId}}</td>
+			<td align="center">{{$elem.Thema}}</td>
+			<td align="center">{{$elem.RecordBookNum}}</td>
+			<td align="center">{{$elem.LastName}}</td>
+			</tr>
+			{{ end }}
+	</tbody>
+	</table>
+</body>

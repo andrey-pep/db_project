@@ -8,7 +8,7 @@ import (
 	"./dbwork"
 	"database/sql"
 	//"./requests"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"reflect"
 	"encoding/json"
 )
@@ -21,6 +21,7 @@ var Server = &http.Server {
 
 func main() {
 	http.HandleFunc("/", HandleIndex)
+	http.HandleFunc("/index", HandleIndex)
 	http.HandleFunc("/login", Login)
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 	http.HandleFunc("/select", SelectRequest)
@@ -40,9 +41,9 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "no data")
 		return
 	}
-	t := template.Must(template.ParseFiles("public/output.html"))
+	tmplFile := Templates[r.URL.Query().Get("action")]
+	t := template.Must(template.ParseFiles("public/" + tmplFile))
 	output := PrepareForOut(out[1])
-	spew.Dump(output)
 	if err := t.Execute(w, output); err != nil {
 		panic(err)
 	}
@@ -94,4 +95,9 @@ func PrepareForOut(res reflect.Value) []map[string]interface{} {
 		}
 	}
 	return outData
+}
+
+var Templates = map[string]string {
+	"Req1" : "output1.html",
+	"Req2" : "output2.html",
 }

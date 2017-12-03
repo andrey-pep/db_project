@@ -1,0 +1,32 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	<form action="index" method="GET" name="back"> 
+		<input class="but" type="submit" value="Назад"> 
+	</form> 
+	<table>
+	<tbody>
+		<tr>
+			<td align="center">Группа</td>
+			<td align="center">Зачётная книжка</td>
+			<td align="center">Студент</td>
+			<td align="center">Преподаватель</td>
+			<td align="center">Тема</td>
+			<td align="center">Оценка</td>
+		</tr>
+		<tr>
+			{{ range $index, $elem := . }}
+			<td align="center">{{$elem.GroupName}}</td>
+			<td align="center">{{$elem.RecordBookNum}}</td>
+			<td align="center">{{$elem.SLastName}}</td>
+			<td align="center">{{$elem.TLastName}}</td>
+			<td align="center">{{$elem.PThema}}</td>
+			<td align="center">{{$elem.Mark}}</td>
+			</tr>
+			{{ end }}
+	</tbody>
+	</table>
+</body>
