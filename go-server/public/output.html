@@ -1,0 +1,13 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	{{ range $index, $elem := . }} {{ $index }} </br>
+		{{range $key, $value := $elem}}
+		{{ $key }}: {{ $value }}
+		</br>
+		{{ end }}
+	{{ end }}
+</body>
