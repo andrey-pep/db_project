@@ -58,15 +58,36 @@ func (c *MainController) SelectUser(r *http.Request) error {
 	hasher := md5.New()
 	hasher.Write([]byte(r.URL.Query().Get("password")))
 	hashedPass := hex.EncodeToString(hasher.Sum(nil))
-	rows, err := c.DataBase.Query("Select login, group_type from users where login = ? AND password = ?", r.URL.Query().Get("login"), hashedPass)
+	rows, err := c.DataBase.Query("Select login, group_type, password from users where login = ? AND password = ?", r.URL.Query().Get("login"), hashedPass)
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
-		err = rows.Scan(&c.Login, &c.UsrGroup)
+		err = rows.Scan(&c.Login, &c.UsrGroup, &c.UsrPass)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *MainController) CheckIfUserExists() (error, bool) {
+	hasher := md5.New()
+	hasher.Write([]byte(c.UsrPass))
+	hashedPass := hex.EncodeToString(hasher.Sum(nil))
+	rows, err := c.DataBase.Query("Select login from users where login = ? AND password = ? AND group_type = ?", c.Login, hashedPass, c.UsrGroup)
+	if err != nil {
+		return err, false
+	}
+	r := new(models.User)
+	for rows.Next() {
+		err = rows.Scan(&r.Login)
+		if err != nil {
+			return err, false
+		}
+	}
+	if r.Login != "" {
+		return nil, true
+	} else { return nil, false }
+	return nil, false
 }

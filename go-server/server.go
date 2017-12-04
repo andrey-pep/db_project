@@ -8,7 +8,7 @@ import (
 	"./dbwork"
 	"database/sql"
 	//"./requests"
-//	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"reflect"
 	"encoding/json"
 )
@@ -25,7 +25,7 @@ func main() {
 	http.HandleFunc("/login", Login)
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 	http.HandleFunc("/select", SelectRequest)
-	http.HandleFunc("/authorization", CheckUser)
+	http.HandleFunc("/authorization", Enter)
 
 	err := Server.ListenAndServe()
 	if err != nil {
@@ -33,19 +33,61 @@ func main() {
 	}
 }
 
-func CheckUser(w http.ResponseWriter, r *http.Request) {
+func CheckCookies(cArr []*http.Cookie,MC *MainController) bool {
+	for _, c := range cArr {
+		if c.Name == "ln" {
+			MC.Login = c.Value
+		}
+		if c.Name == "ug" {
+			MC.UsrGroup = c.Value
+		}
+		if c.Name == "ps" {
+			MC.UsrPass = c.Value
+		}
+	}
+	return true
+}
+
+func CheckUser(w http.ResponseWriter, r *http.Request, MC *MainController) bool {
+	CheckCookies(r.Cookies(), MC)
+	if (MC.Login != "" && MC.Login != "" && MC.UsrPass != "") {
+		err, exists := MC.CheckIfUserExists()
+		if err != nil {
+			t := template.Must(template.ParseFiles("public/error.html"))
+			if err := t.Execute(w, ""); err != nil {
+				panic(err)
+			}
+		}
+		if exists {
+			return true
+		} else {
+			t := template.Must(template.ParseFiles("public/nono.html"))
+			if err := t.Execute(w, ""); err != nil {
+				panic(err)
+			}
+		}
+	}
+	return false
+}
+
+func Enter (w http.ResponseWriter, r *http.Request) {
 	PrepareArgs(r)
-	err, DB := dbwork.Connect("nonauth", "password")
+	MC := &MainController{UsrGroup: "nonauth"}
+	err, DB := dbwork.Connect(MC.UsrGroup)
+	MC.DataBase = DB
 	if err != nil {
 		t := template.Must(template.ParseFiles("public/error.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
-		return	
+		return
 	}
-	MC := &MainController{ DataBase : DB, UsrGroup: "nonauth"}
-	out := reflect.ValueOf(MC).MethodByName("SelectUser").Call([]reflect.Value{reflect.ValueOf(r)})
-	if !out[0].IsNil() {
+	err = MC.SelectUser(r)
+	if err != nil {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
 		return
 	}
 	if MC.UsrGroup == "nonauth" {
@@ -55,11 +97,18 @@ func CheckUser(w http.ResponseWriter, r *http.Request) {
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
-		return
-	}
+			return
+		}
 		return
 	}
 	t := template.Must(template.ParseFiles("public/index.html"))
+	expiration := time.Now().Add(365 * 24 * time.Hour)
+    cookie1 := http.Cookie{Name: "ln", Value: MC.Login, Expires: expiration}
+	cookie2 := http.Cookie{Name: "ud", Value: MC.UsrGroup, Expires: expiration}
+	cookie3 := http.Cookie{Name: "ps", Value: MC.UsrPass, Expires: expiration}
+    http.SetCookie(w, &cookie1)
+    http.SetCookie(w, &cookie2)
+    http.SetCookie(w, &cookie3)
 	w.Header().Set("Content-Type", "text/html")
 	if err := t.Execute(w, ""); err != nil {
 		t := template.Must(template.ParseFiles("public/error.html"))
@@ -68,23 +117,28 @@ func CheckUser(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	return
 }
 
 func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	PrepareArgs(r)			//подготовка аргументо из запроса
-	err, DB := dbwork.Connect("root", "ghjybr7")	//коннект к базе, до этого нужно сделать авторизацию
-	if err != nil {
-			t := template.Must(template.ParseFiles("public/error.html"))
+	MC := &MainController{UsrGroup: "nonauth"}
+	if !CheckUser(w, r, MC) {
+		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+	}
+	err, DB := dbwork.Connect("teacher")	//коннект к базе, до этого нужно сделать авторизацию
+	if (err != nil || reflect.ValueOf(DB).IsNil()) {
+		t := template.Must(template.ParseFiles("public/error.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
 		return
 	}
-	MC := &MainController{ DataBase : DB, UsrGroup : "teacher"}	//создаю объект с контроллером, в котором хранятся коннект к бд и пользователь, опцианально, мб уберу
+	MC.DataBase = DB
 	out := reflect.ValueOf(MC).MethodByName(r.URL.Query().Get("action")).Call([]reflect.Value{reflect.ValueOf(r)})	//выполнение самого запроса, пришлось немного с рефлектом поебаца
 	if !out[0].IsNil() {
 		return
-	}	
+	}
 	if reflect.ValueOf(out[1].Interface()).Len() == 0 {
 		t := template.Must(template.ParseFiles("public/nodata.html"))
 		if err := t.Execute(w, ""); err != nil {
@@ -106,12 +160,14 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	expiration := time.Now().Add(365 * 24 * time.Hour)
-    cookie := http.Cookie{Name: "username", Value: "astaxie", Expires: expiration}
-    http.SetCookie(w, &cookie)
-	t := template.Must(template.ParseFiles("public/index.html"))
-	w.Header().Set("Content-Type", "text/html")
-	t.Execute(w, "")
+	MC := &MainController{UsrGroup: "nonauth"}
+	if CheckUser(w, r, MC) {
+		t := template.Must(template.ParseFiles("public/index.html"))
+		w.Header().Set("Content-Type", "text/html")
+		t.Execute(w, "")
+	} else {
+		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+	}
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +187,8 @@ func PrepareArgs(r *http.Request) {
 type MainController struct {
 	DataBase    *sql.DB
 	UsrGroup    string
-	Login        string
+	Login       string
+	UsrPass     string
 }
 
 func PrepareForOut(res reflect.Value) []map[string]interface{} {
