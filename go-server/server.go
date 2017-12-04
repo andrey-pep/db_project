@@ -8,7 +8,7 @@ import (
 	"./dbwork"
 	"database/sql"
 	//"./requests"
-	//"github.com/davecgh/go-spew/spew"
+//	"github.com/davecgh/go-spew/spew"
 	"reflect"
 	"encoding/json"
 )
@@ -20,11 +20,12 @@ var Server = &http.Server {
 }
 
 func main() {
-	http.HandleFunc("/", HandleIndex)
+	http.HandleFunc("/", Login)
 	http.HandleFunc("/index", HandleIndex)
 	http.HandleFunc("/login", Login)
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 	http.HandleFunc("/select", SelectRequest)
+	http.HandleFunc("/authorization", CheckUser)
 
 	err := Server.ListenAndServe()
 	if err != nil {
@@ -32,12 +33,58 @@ func main() {
 	}
 }
 
+func CheckUser(w http.ResponseWriter, r *http.Request) {
+	PrepareArgs(r)
+	err, DB := dbwork.Connect("nonauth", "password")
+	if err != nil {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return	
+	}
+	MC := &MainController{ DataBase : DB, UsrGroup: "nonauth"}
+	out := reflect.ValueOf(MC).MethodByName("SelectUser").Call([]reflect.Value{reflect.ValueOf(r)})
+	if !out[0].IsNil() {
+		return
+	}
+	if MC.UsrGroup == "nonauth" {
+		t := template.Must(template.ParseFiles("public/noauth.html"))
+		if err := t.Execute(w, ""); err != nil {
+			t := template.Must(template.ParseFiles("public/error.html"))
+			if err := t.Execute(w, ""); err != nil {
+				panic(err)
+			}
+		return
+	}
+		return
+	}
+	t := template.Must(template.ParseFiles("public/index.html"))
+	w.Header().Set("Content-Type", "text/html")
+	if err := t.Execute(w, ""); err != nil {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
+	}
+}
+
 func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	PrepareArgs(r)			//подготовка аргументо из запроса
-	DB := dbwork.Connect()	//коннект к базе, до этого нужно сделать авторизацию
-	MC := &MainController{ DataBase : DB, UsrGroup : "User" }	//создаю объект с контроллером, в котором хранятся коннект к бд и пользователь, опцианально, мб уберу
+	err, DB := dbwork.Connect("root", "ghjybr7")	//коннект к базе, до этого нужно сделать авторизацию
+	if err != nil {
+			t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
+	}
+	MC := &MainController{ DataBase : DB, UsrGroup : "teacher"}	//создаю объект с контроллером, в котором хранятся коннект к бд и пользователь, опцианально, мб уберу
 	out := reflect.ValueOf(MC).MethodByName(r.URL.Query().Get("action")).Call([]reflect.Value{reflect.ValueOf(r)})	//выполнение самого запроса, пришлось немного с рефлектом поебаца
-	
+	if !out[0].IsNil() {
+		return
+	}	
 	if reflect.ValueOf(out[1].Interface()).Len() == 0 {
 		t := template.Must(template.ParseFiles("public/nodata.html"))
 		if err := t.Execute(w, ""); err != nil {
@@ -48,6 +95,7 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	tmplFile := Templates[r.URL.Query().Get("action")]
 	t := template.Must(template.ParseFiles("public/" + tmplFile))
 	output := PrepareForOut(out[1])
+	w.Header().Set("Content-Type", "text/html")
 	if err := t.Execute(w, output); err != nil {
 		t := template.Must(template.ParseFiles("public/error.html"))
 		if err := t.Execute(w, ""); err != nil {
@@ -63,13 +111,13 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
     http.SetCookie(w, &cookie)
 	t := template.Must(template.ParseFiles("public/index.html"))
 	w.Header().Set("Content-Type", "text/html")
-	t.Execute(w, "Hello world!")
+	t.Execute(w, "")
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.ParseFiles("public/index.html"))
+	t := template.Must(template.ParseFiles("public/login.html"))
 	w.Header().Set("Content-Type", "text/html")
-	t.Execute(w, "Hello world!")
+	t.Execute(w, "")
 }
 
 func PrepareArgs(r *http.Request) {
@@ -83,6 +131,7 @@ func PrepareArgs(r *http.Request) {
 type MainController struct {
 	DataBase    *sql.DB
 	UsrGroup    string
+	Login        string
 }
 
 func PrepareForOut(res reflect.Value) []map[string]interface{} {

@@ -4,7 +4,11 @@ import (
 	//"github.com/davecgh/go-spew/spew"
 	"net/http"
 	"./models"
+	"crypto/md5"
+	"encoding/hex"
 )
+
+
 
 func (c *MainController) Req1(r *http.Request) (error, interface{}) {
 	var Select = "Select project.Record_book_num, student.last_name, teachers.Last_name, project.thema, protocol_string.mark, student.Group_Name "
@@ -48,4 +52,21 @@ func (c *MainController) Req2(r *http.Request) (error, interface{}) {
 		results = append(results, result)
 	}
 	return nil, results
+}
+
+func (c *MainController) SelectUser(r *http.Request) error {
+	hasher := md5.New()
+	hasher.Write([]byte(r.URL.Query().Get("password")))
+	hashedPass := hex.EncodeToString(hasher.Sum(nil))
+	rows, err := c.DataBase.Query("Select login, group_type from users where login = ? AND password = ?", r.URL.Query().Get("login"), hashedPass)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		err = rows.Scan(&c.Login, &c.UsrGroup)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
