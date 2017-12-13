@@ -27,7 +27,36 @@ type ResultOne struct {
 	GroupName        string
 }
 
+type ResultThree struct {
+	TId			int
+	LastName 	string
+	Birthdate	string
+	PulpitNum	int
+	StWorkTime	string
+}
+
+type ResultFour struct {
+	ResultThree
+}
+
+type ResultSix struct {
+	ResultThree
+}
+
+type ResultFive struct {
+	ResultThree
+}
+
 type User struct {
 	Login	  string
 	GroupName string
+}
+
+type Otchet struct {
+	OId			int
+	TId			int
+	SubjectName	string
+	OGroup		string
+	AvgMark		float64
+	OYear		int
 }

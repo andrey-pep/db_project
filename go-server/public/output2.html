@@ -4,9 +4,7 @@
 	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
 </head>
 <body bgcolor = #DEE9F9>
-	<form action="index" method="GET" name="back"> 
-		<input class="but" type="submit" value="Назад"> 
-	</form> 
+{{ template "Back" }}
 	<table>
 	<tbody>
 		<tr>
@@ -25,4 +23,5 @@
 			{{ end }}
 	</tbody>
 	</table>
+{{ template "Exit" }}
 </body>

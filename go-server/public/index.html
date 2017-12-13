@@ -59,9 +59,10 @@
 <td align=center>
 	<input class="but" type="submit" value="Запрос 3" onclick="showBlock('select3');">
 	<div id="select3" style="display: none;">
-	<form action="http://localhost/api/select3.php" method="GET" name="select3">
+	<form action="select" method="GET" name="select3">
 	<p><label>Показать все сведения о самом молодом преподавателе</label></p>
 	<input class="but" type="submit" value="Выполнить">
+	<input type="hidden" name="action" value="Req3">
 	</form>
 	</div>
 	</td>
@@ -70,28 +71,31 @@
 <td align=center>
 	<input class="but" type="submit" value="Запрос 4" onclick="showBlock('select4');">
 	<div id="select4" style="display: none;">
-	<form action="http://localhost/api/select4.php" method="GET" name="select4">
+	<form action="select" method="GET" name="select4">
 	<p><label>Показать все сведения о преподавателях, которые не вели ни одного проекта</label></p>
 	<input class="but" type="submit" value="Выполнить">
+	<input type="hidden" name="action" value="Req4">
 	</form>
 	</div>
 	</td>
 <td align=center>
 	<input class="but" type="submit" value="Запрос 5" onclick="showBlock('select5');">
 	<div id="select5" style="display: none;">
-    <form action="http://localhost/api/select5.php" method="GET" name="select5">
+    <form action="select" method="GET" name="select5">
 		<p><label>Преподаватели без проектов в заданном году. Введите год в формате ГГГГ: </label><input class="texti" name="c_year" required type="text" pattern="[1-9][0-9]{3}" placeholder="2018"></p>
 		<input class="but" type="submit" value="Выполнить">
 		<input class="but" type="reset" value="Сброс">
+		<input type="hidden" name="action" value="Req5">
 	</form>
 	</div>
 </td>
 <td align=center>
 	<input class="but" type="submit" value="Запрос 6" onclick="showBlock('select6');">
 	<div id="select6" style="display: none;">
-	<form action="http://localhost/api/select6.php" method="GET" name="select6">
+	<form action="select" method="GET" name="select6">
 	<p><label>Показать все сведения о преподавателе, который вёл больше всех студентов</label></p>
 	<input class="but" type="submit" value="Выполнить">
+	<input type="hidden" name="action" value="Req6">
 	</form>
 	</div>
 	</td>
@@ -100,13 +104,24 @@
 </tbody>
 </table>
 
+<div>
+	<input class="but" type="submit" value="Внести оценки" onclick="checkTeacher('inmarks');">
+	<div id="inmarks" style="display: none;">
+	<form action="inmarks" method="GET" name="inmarks">
+	<p><input class="texti" name="g_index" required type="text" pattern ="[az-Az]-[0-9]" placeholder="RK6-41"></p>
+	<input class="but" type="submit" value="Выполнить">
+	<input type="hidden" name="action" value="tt">
+	</div>
+	</form>
+</div>
+
 </div>
 <div> 
 <h3>Процедура</h3> 
 <p>Занести в отчёт о сдаче предмета в году по форме: ID преподавателя, предмет, группа, средняя оценка, год</p> 
-<form action="http://localhost/api/procedure.php" method="GET" name="proc" target="table"> 
+<form action="proc" method="GET" name="proc" target="table"> 
 <p><label>Введите год в формате ГГГГ: </label><input class="texti" name="YP" required type="text" pattern="[1-9][0-9]{3}" placeholder="2017"></p> 
-<p><label>Выберете название предмета: </label><select class="quali" name="SP">
+<p><label>Выберете название предмета: </label><select class="quali" name="SP" type="text">
 			<option value="Физика">Физика</option>
 			<option value="Химия">Химия</option>
 			<option value="Математика">Математика</option>
@@ -116,10 +131,15 @@
 <input class="but" type="reset" value="Очистить"> 
 <input class="but" type="submit" value="Выполнить"> 
 </form> 
-<form action="http://localhost/api/check.php" method="GET" name="check" target="table" onsubmit="show('block')"> 
-<input class="but" type="submit" value="Вывести отчет"> 
-</form> 
+<form action="check" method="GET" name="procedure">
+<input class="but" type="submit" value="Вывести отчёт">
+</form>
+<!--<input class="but" type="submit" value="Вывести отчет" onclick="checkOt();"> -->
 </div>
+</form> 
+<form action="logout" method="GET" name="logout"> 
+<input class="but" type="submit" value="Выход"> 
+</form> 
 
 </div>
 </body> 

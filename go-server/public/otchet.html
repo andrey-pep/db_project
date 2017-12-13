@@ -1,0 +1,31 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	{{ template "Back" }}
+	<table>
+	<tbody>
+		<tr>
+			<td align="center">ID строки отчёта</td>
+			<td align="center">ID преподавателя</td>
+			<td align="center">Название предмета</td>
+			<td align="center">Группа</td>
+			<td align="center">Средняя оценка</td>
+			<td align="center">Год</td>
+		</tr>
+		<tr>
+			{{ range $index, $elem := . }}
+			<td align="center">{{$elem.OId}}</td>
+			<td align="center">{{$elem.TId}}</td>
+			<td align="center">{{$elem.SubjectName}}</td>
+			<td align="center">{{$elem.OGroup}}</td>
+			<td align="center">{{$elem.AvgMark}}</td>
+			<td align="center">{{$elem.OYear}}</td>
+			</tr>
+			{{ end }}
+	</tbody>
+	</table>
+{{ template "Exit" }}
+</body>

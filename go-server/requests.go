@@ -1,13 +1,150 @@
 package main
 
 import (
-	//"github.com/davecgh/go-spew/spew"
+	"github.com/davecgh/go-spew/spew"
 	"net/http"
 	"./models"
 	"crypto/md5"
 	"encoding/hex"
 )
 
+
+func (c *MainController) Otchet() (error, []*models.Otchet) {
+	Select := `SELECT o_id, t_id, subject_name, o_group, avg_mark, o_year FROM avg_marks;`
+	rows, err := c.DataBase.Query(Select)
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.Otchet, 0)
+	for rows.Next() {
+		res := new(models.Otchet)
+		err := rows.Scan(&res.OId, &res.TId, &res.SubjectName, &res.OGroup, &res.AvgMark, &res.OYear)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results	
+}
+
+func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Student) {
+	Select := `Select * FROM student Where Group_Name = ?`
+	rows, err := c.DataBase.Query(Select, r.URL.Query().Get("g_index"))
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.Student, 0)
+	for rows.Next() {
+		res := new(models.Student)
+		err := rows.Scan(&res.RecordBookNum, &res.Birthday, &res.GroupName, &res.LastName)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results
+}
+
+func (c *MainController) MakeOtchet(r *http.Request) error {
+	query := `CALL Otchet(` + r.URL.Query().Get("YP") + `, "` + r.URL.Query().Get("SP") + `")`
+	spew.Dump(r.URL.Query().Get("YP"))
+	spew.Dump(r.URL.Query().Get("SP"))
+	res, err := c.DataBase.Exec(query)
+	spew.Dump(res)
+	spew.Dump(err)
+	return err
+}
+
+func (c *MainController) Req3(r *http.Request) (error, interface{}) {
+	Select := `Select * FROM teachers WHERE Birthdate = (SELECT MAX(Birthdate) FROM teachers)`
+	rows, err := c.DataBase.Query(Select)
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.ResultThree, 0)
+	for rows.Next() {
+		res := new(models.ResultThree)
+		err := rows.Scan(&res.TId, &res.LastName, &res.Birthdate, &res.PulpitNum, &res.StWorkTime)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results
+}
+
+func (c *MainController) Req4(r *http.Request) (error, interface{}) {
+	Select := `Select t_id, last_name, Birthdate, Pulpit_num, St_work_date`
+	Where := ` Where pr_id IS NULL`
+	From := ` From teachers LEFT JOIN project USING(t_id)`
+	rows, err := c.DataBase.Query(Select + From + Where)
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.ResultFour, 0)
+	for rows.Next() {
+		res := new(models.ResultFour)
+		err := rows.Scan(&res.TId, &res.LastName, &res.Birthdate, &res.PulpitNum, &res.StWorkTime)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results
+}
+
+func (c *MainController) Req5(r *http.Request) (error, interface{}) {
+	Select := `Select teachers.* `
+	From := `FROM teachers `
+	Where := `WHERE t_id NOT IN (
+    SELECT t_id
+    FROM teachers LEFT JOIN project USING(t_id)
+     WHERE YEAR(finish_date)= ?)`
+	rows, err := c.DataBase.Query(Select + From + Where, r.URL.Query().Get("g_index"))
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.ResultFive, 0)
+	for rows.Next() {
+		res := new(models.ResultFive)
+		err := rows.Scan(&res.TId, &res.LastName, &res.Birthdate, &res.PulpitNum, &res.StWorkTime)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results
+}
+
+func (c *MainController) Req6(r *http.Request) (error, interface{}) {
+	Select := `Select teachers.* `
+	From := `FROM (
+		SELECT COUNT(t_id) as cnt, t_id
+		FROM teachers LEFT JOIN project USING(t_id)
+		WHERE Record_book_num IS NOT NULL
+		GROUP BY t_id) t_c JOIN teachers USING(t_id)`
+	Where := `WHERE cnt = (
+		SELECT MAX(cnt) as m_cnt
+		FROM (
+		SELECT COUNT(t_id) as cnt
+		FROM teachers LEFT JOIN project USING(t_id)
+		WHERE Record_book_num IS NOT NULL
+		GROUP BY t_id) t_count)`
+	rows, err := c.DataBase.Query(Select + From + Where)
+	if err != nil {
+		return err, nil
+	}
+	results := make([]*models.ResultSix, 0)
+	for rows.Next() {
+		res := new(models.ResultSix)
+		err := rows.Scan(&res.TId, &res.LastName, &res.Birthdate, &res.PulpitNum, &res.StWorkTime)
+		if err != nil {
+			return err, nil
+		}
+		results = append(results, res)
+	}
+	return nil, results
+}
 
 
 func (c *MainController) Req1(r *http.Request) (error, interface{}) {
@@ -72,16 +209,13 @@ func (c *MainController) SelectUser(r *http.Request) error {
 }
 
 func (c *MainController) CheckIfUserExists() (error, bool) {
-	hasher := md5.New()
-	hasher.Write([]byte(c.UsrPass))
-	hashedPass := hex.EncodeToString(hasher.Sum(nil))
-	rows, err := c.DataBase.Query("Select login from users where login = ? AND password = ? AND group_type = ?", c.Login, hashedPass, c.UsrGroup)
+	rows, err := c.DataBase.Query("Select login, group_type from users where login = ? AND password = ?", c.Login, c.UsrPass )
 	if err != nil {
 		return err, false
 	}
 	r := new(models.User)
 	for rows.Next() {
-		err = rows.Scan(&r.Login)
+		err = rows.Scan(&r.Login, &c.UsrGroup)
 		if err != nil {
 			return err, false
 		}
@@ -89,5 +223,5 @@ func (c *MainController) CheckIfUserExists() (error, bool) {
 	if r.Login != "" {
 		return nil, true
 	} else { return nil, false }
-	return nil, false
+	return nil, true
 }

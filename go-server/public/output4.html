@@ -1,0 +1,29 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	{{ template "Back" }}
+	<table>
+	<tbody>
+		<tr>
+			<td align="center">Id преподавателя</td>
+			<td align="center">Фамилия преподавателя</td>
+			<td align="center">Дата рождения</td>
+			<td align="center">Номер кафедры</td>
+			<td align="center">Дата начала работы</td>
+		</tr>
+		<tr>
+			{{ range $index, $elem := . }}
+			<td align="center">{{$elem.TId}}</td>
+			<td align="center">{{$elem.LastName}}</td>
+			<td align="center">{{$elem.Birthdate}}</td>
+			<td align="center">{{$elem.PulpitNum}}</td>
+			<td align="center">{{$elem.StWorkTime}}</td>
+			</tr>
+			{{ end }}
+	</tbody>
+	</table>
+{{ template "Exit" }}
+</body>

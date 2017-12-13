@@ -1,0 +1,38 @@
+<html> 
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="public/Stylesheets/req1style.css">
+</head>
+<body bgcolor = #DEE9F9>
+	{{ template "Back" }}
+	<form action="addmarks" method="GET" name="addmarks">
+	<table width=80%>
+	<tbody>
+		<tr>
+			<td align="center">Номер зачётной книжки</td>
+			<td align="center">Дата рождения</td>
+			<td align="center">Номер группы</td>
+			<td align="center">Фамилия</td>
+			<td align="center">Тема</td>
+			<td align="center">Оценка</td>
+		</tr>
+		<tr>
+			{{ range $index, $elem := . }}
+			<td align="center">{{$elem.RecordBookNum}}</td>
+			<td align="center">{{$elem.Birthday}}</td>
+			<td align="center">{{$elem.GroupName}}</td>
+			<td align="center">{{$elem.LastName}}</td>
+			<td align="center">
+				<p><input class="texti" name="theme" required type="text" pattern="[az-Az\s]" placeholder="Проектирование подъемного механизма"></p>
+			</td>
+				<p><td align="center"><input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5"></td>
+			<td align="center" class="td2"><input class="but" type="submit" value="Выполнить" onclick="savemark()"></td>
+			</tr></p>
+			{{ end }}
+	</tbody>
+	</table>
+	<input class="but" type="submit" value="Выполнить">
+	<input type="hidden" name="action" value="Выполнить">
+	</form>
+{{ template "Exit" }}
+</body>
