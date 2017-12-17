@@ -24,7 +24,7 @@ td {
 .td2 {
 	text-align: center;
 	font-size: 0px;
-	transition-duration: 200ms;
+	transition-duration: 0ms;
 	transition-timing-function: none;
 	transition-property: none;
 	border: 0px solid;

@@ -5,8 +5,7 @@
 </head>
 <body bgcolor = #DEE9F9>
 	{{ template "Back" }}
-	<form action="addmarks" method="GET" name="addmarks">
-	<table width=80%>
+	<table width=80% id="table1">
 	<tbody>
 		<tr>
 			<td align="center">Номер зачётной книжки</td>
@@ -22,17 +21,50 @@
 			<td align="center">{{$elem.Birthday}}</td>
 			<td align="center">{{$elem.GroupName}}</td>
 			<td align="center">{{$elem.LastName}}</td>
-			<td align="center">
-				<p><input class="texti" name="theme" required type="text" pattern="[az-Az\s]" placeholder="Проектирование подъемного механизма"></p>
+			<td align="center" id="td1">
+				<p><input class="texti" name="theme" required type="text" pattern="[az-Az]" placeholder="Проектирование подъемного механизма" id="in1"></p>
 			</td>
-				<p><td align="center"><input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5"></td>
-			<td align="center" class="td2"><input class="but" type="submit" value="Выполнить" onclick="savemark()"></td>
+				<p><td align="center" id="td2"><input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in2"></td>
+			<td align="center" class="td2" id="input"><input class="but" id="el" type="submit" value="Выполнить"></td>
 			</tr></p>
 			{{ end }}
 	</tbody>
 	</table>
-	<input class="but" type="submit" value="Выполнить">
-	<input type="hidden" name="action" value="Выполнить">
-	</form>
+	<input class="but" id="send" type="submit" value="Выполнить" onclick="sendm()">
 {{ template "Exit" }}
 </body>
+
+<script>
+( function() {
+	rows = document.getElementById("table1").getElementsByTagName("tr");
+	for (var i=1; i<rows.length; i++) {
+		var tr = rows[i];
+		td_but = tr.cells[6];
+		but = td_but.firstElementChild;
+		rows[i].cells[6].firstElementChild.onclick = function() {
+			if (this.value === 'Выполнить') {
+				tr = this.parentElement.parentElement;
+				var theme_td = tr.cells[4];
+				theme_value = theme_td.getElementsByTagName('input')[0].value;
+				theme_td.innerHTML = theme_value;
+				var mark_td = tr.cells[5];
+				mark_value = mark_td.getElementsByTagName('input')[0].value;
+				mark_td.innerHTML = mark_value;
+			}
+		}
+	}
+
+ })();
+function sendm() {
+	var xhttp = new XMLHttpRequest();
+	var table = document.getElementById("table1");
+	var out = [];
+	for (var r=1; r<table.rows.length; r++) {
+		out[out.length] = table.rows[r].cells[2].innerHTML;
+	}
+	xhttp.open("GET", "marks", false);
+	xhttp.setRequestHeader("Content-type", "application/json");
+	JSON.stringify(out)
+	xhttp.send(out);
+}
+</script>
