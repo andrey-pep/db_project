@@ -9,6 +9,8 @@ type Student struct {
 	Birthday		string `db:"Birthday"`
 	GroupName		string `db:"Group_name"`
 	LastName		string `db:"Last_Name"`
+	Subject         string
+	Thema           string 
 }
 
 type ResultTwo struct {
@@ -18,12 +20,22 @@ type ResultTwo struct {
 	LastName         string
 }
 
+type MarksUpdate struct {
+	RecordBookNum string	`json:"record_book_num"`
+	Birthdate   string		`json:"birthdate"`
+	GroupName   string		`json:"group_name"`
+	LastName    string		`json:"last_name"`
+	Subject 	string
+	Theme 		string
+	Mark 		string
+}
+
 type ResultOne struct {
 	RecordBookNum    int
 	SLastName        string
 	TLastName        string
 	PThema           string
-	Mark             int
+	Mark             *int
 	GroupName        string
 }
 

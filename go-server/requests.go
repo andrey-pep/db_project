@@ -1,13 +1,33 @@
 package main
 
 import (
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"net/http"
 	"./models"
 	"crypto/md5"
 	"encoding/hex"
+	"strconv"
 )
 
+
+func (c *MainController) MarksInput(arr []models.MarksUpdate) (int, error) {
+	update := `update protocol_string set mark = ? 
+	WHERE thema = ? and Record_book_num = ?`
+	affected := 0
+	for _, v := range arr {
+		mark, _ := strconv.Atoi(v.Mark)
+		res, err := c.DataBase.Exec(update, mark, v.Theme, v.RecordBookNum)
+		if (err != nil) {
+			return affected, err
+		}
+		_, err = res.RowsAffected()
+		if (err != nil) {
+			return affected, err
+		}
+		affected++
+	}
+	return affected, nil;
+}
 
 func (c *MainController) Otchet() (error, []*models.Otchet) {
 	Select := `SELECT o_id, t_id, subject_name, o_group, avg_mark, o_year FROM avg_marks;`
@@ -28,7 +48,9 @@ func (c *MainController) Otchet() (error, []*models.Otchet) {
 }
 
 func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Student) {
-	Select := `Select * FROM student Where Group_Name = ?`
+	Select := `Select student.Record_book_num, Birthday, Group_name, Last_Name, subject, project.thema FROM student JOIN protocol_string USING(Record_book_num)
+		JOIN project USING(pr_id)
+		Where Group_Name = ? and mark IS NULL`
 	rows, err := c.DataBase.Query(Select, r.URL.Query().Get("g_index"))
 	if err != nil {
 		return err, nil
@@ -36,7 +58,7 @@ func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Stude
 	results := make([]*models.Student, 0)
 	for rows.Next() {
 		res := new(models.Student)
-		err := rows.Scan(&res.RecordBookNum, &res.Birthday, &res.GroupName, &res.LastName)
+		err := rows.Scan(&res.RecordBookNum, &res.Birthday, &res.GroupName, &res.LastName, &res.Subject, &res.Thema)
 		if err != nil {
 			return err, nil
 		}
@@ -47,11 +69,9 @@ func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Stude
 
 func (c *MainController) MakeOtchet(r *http.Request) error {
 	query := `CALL Otchet(` + r.URL.Query().Get("YP") + `, "` + r.URL.Query().Get("SP") + `")`
-	spew.Dump(r.URL.Query().Get("YP"))
-	spew.Dump(r.URL.Query().Get("SP"))
+
 	res, err := c.DataBase.Exec(query)
-	spew.Dump(res)
-	spew.Dump(err)
+
 	return err
 }
 

@@ -15,9 +15,9 @@ function checkOt() {
 
 }
 
-function checkTeacher(id) {
+function checkTech(id) {
 	var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "check_teacher", false);
+    xhttp.open("GET", "check_tech", false);
     xhttp.setRequestHeader("Content-type", "text/html");
     xhttp.send();
     data = JSON.parse(xhttp.response);

@@ -14,6 +14,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"io"
+	"./models"
 )
 
 var Server = &http.Server {
@@ -32,13 +33,66 @@ func main() {
 	http.HandleFunc("/logout", Exit)
 	http.HandleFunc("/check", CheckOtchet)
 	http.HandleFunc("/proc", Procedure)
-	http.HandleFunc("/check_teacher", IsTeacher)
+	http.HandleFunc("/check_tech", IsTech)
 	http.HandleFunc("/inmarks", InsertMarks)
+	http.HandleFunc("/marks", NewMarks)
+	http.HandleFunc("/error", Error)
 
 	err := Server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
+}
+
+func Error (w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("public/error.html"))
+	if err := t.Execute(w, ""); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func NewMarks(w http.ResponseWriter, r *http.Request) {
+	MC := &MainController{UsrGroup: "nonauth"}
+	err, DB := dbwork.Connect(MC.UsrGroup)
+	MC.DataBase = DB
+	if CheckUser(w, r, MC) == false {
+		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		return
+	}
+	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
+	MC.DataBase = DB
+
+	if (err != nil || reflect.ValueOf(DB).IsNil()) {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	var u []models.MarksUpdate
+	p := make([]byte, r.ContentLength)
+	_, _ = r.Body.Read(p)
+
+	err = json.Unmarshal(p, &u)
+	if err != nil {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
+	}
+	affected, err := MC.MarksInput(u)
+	if (affected != len(u) || err != nil) {
+		t := template.Must(template.ParseFiles("public/error.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return	
+	}
+	http.Redirect(w, r, "inmarks?tt=" + u[0].GroupName, http.StatusMovedPermanently)
+
 }
 
 func InsertMarks(w http.ResponseWriter, r *http.Request) {
@@ -58,11 +112,6 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
-		return
-	}
-
-	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
 		return
 	}
 
@@ -86,12 +135,11 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	return
 
 }
 
-func IsTeacher(w http.ResponseWriter, r *http.Request) {
+func IsTech(w http.ResponseWriter, r *http.Request) {
 	PrepareArgs(r)			//подготовка аргументо из запроса
 	MC := &MainController{UsrGroup: "nonauth"}
 	_, DB := dbwork.Connect(MC.UsrGroup)
@@ -101,7 +149,7 @@ func IsTeacher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := CheckResp{false}
-	if MC.UsrGroup == "teacher" {
+	if MC.UsrGroup == "root" {
 		resp.Status = true
 	}
 	js, _ := json.Marshal(resp)

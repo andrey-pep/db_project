@@ -18,5 +18,5 @@ var Groups = map[string]string {
 	"teacher" : "teacher",
 	"student" : "student",
 	"nonauth" : "password",
-	"tech"    : "ghjybr7",
+	"root"    : "ghjybr7",
 }

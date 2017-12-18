@@ -22,16 +22,12 @@
 			<td align="center">{{$elem.Birthday}}</td>
 			<td align="center">{{$elem.GroupName}}</td>
 			<td align="center">{{$elem.LastName}}</td>
-			<td align="center" id="inp">
-				<p><input class="texti" name="subject" required type="text" pattern="[az-Az]" placeholder="Механика" id="in1"></p>
-			</td>
-			<td align="center" id="inp">
-				<p><input class="texti" name="theme" required type="text" pattern="[az-Az]" placeholder="Проектирование подъемного механизма" id="in2"></p>
-			</td>
+			<td align="center">{{$elem.Subject}}</td>
+			<td align="center">{{$elem.Thema}}</td>
 			<td align="center" id="inp">
 				<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in3">
 			</td>
-			<td align="center" class="texti" id="input"><input class="but" id="el" type="submit" value="Выполнить"></td>
+			<td align="center" class="td2" id="input"><input class="but" id="el" type="submit" value="Добавить"></td>
 			</tr></p>
 			{{ end }}
 	</tbody>
@@ -48,33 +44,19 @@
 		td_but = tr.cells[7];
 		but = td_but.firstElementChild;
 		rows[i].cells[7].firstElementChild.onclick = function() {
-			if (this.value === 'Выполнить') {
+			if (this.value === 'Добавить') {
 				tr = this.parentElement.parentElement;
-				var subject_td = tr.cells[4];
-				subject_value = subject_td.getElementsByTagName('input')[0].value;
-				subject_td.innerHTML = subject_value;
-				subject_td.id = 'done';
-				var theme_td = tr.cells[5];
-				theme_value = theme_td.getElementsByTagName('input')[0].value;
-				theme_td.innerHTML = theme_value;
-				theme_td.id = 'done';
 				var mark_td = tr.cells[6];
 				mark_value = mark_td.getElementsByTagName('input')[0].value;
 				mark_td.innerHTML = mark_value;
 				mark_td.id = 'done';
+				this.value = 'Очистить';
 			} else {
 				tr = this.parentElement.parentElement;
-				var subject_td = tr.cells[4];
-				subject_td.innerHTML = '<p><input class="texti" name="subject" required type="text" pattern="[az-Az]" placeholder="Механика" id="in1"></p>';
-				subject_td.id = 'inp';
-				var theme_td = tr.cells[5];
-				theme_value = theme_td.getElementsByTagName('input')[0].value;
-				theme_td.innerHTML = '<p><input class="texti" name="theme" required type="text" pattern="[az-Az]" placeholder="Проектирование подъемного механизма" id="in2"></p>';
-				theme_td.id = 'inp';
 				var mark_td = tr.cells[6];
-				mark_value = mark_td.getElementsByTagName('input')[0].value;
 				mark_td.innerHTML = '<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in3">';
 				mark_td.id = 'inp';
+				this.value = 'Добавить'
 			}
 		}
 	}
@@ -85,19 +67,24 @@ function sendm() {
 	var table = document.getElementById("table1");
 	var out = [];
 	for (var r=1; r<table.rows.length; r++) {
-		td1 = table.rows[r].cells[4];
-		td2 = table.rows[r].cells[5];
-		td3 = table.rows[r].cells[6]
-		if (td1.id === 'done' && td2.id == 'done' && td3.id == 'done') {
+		td1 = table.rows[r].cells[6]
+		if (td1.id === 'done') {
 			var person = {}
-			person.subject = table.rows[r].cells[4].innerHTML
+			person.record_book_num = table.rows[r].cells[0].innerHTML;
+			person.birthdate = table.rows[r].cells[1].innerHTML;
+			person.group_name = table.rows[r].cells[2].innerHTML
+			person.last_name = table.rows[r].cells[3].innerHTML
+			person.subject = table.rows[r].cells[4].innerHTML;
 			person.theme = table.rows[r].cells[5].innerHTML;
 			person.mark = table.rows[r].cells[6].innerHTML;
 			out.push(person)
 		}
 	}
-	xhttp.open("POST", "marks");
+	xhttp.open("POST", "marks", false);
 	xhttp.setRequestHeader("Content-type", "application/json");
 	xhttp.send(JSON.stringify(out));
+	if(xhttp.readyState==4){
+		location.reload();
+	}
 }
 </script>
