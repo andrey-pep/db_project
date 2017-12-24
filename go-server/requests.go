@@ -68,11 +68,11 @@ func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Stude
 }
 
 func (c *MainController) MakeOtchet(r *http.Request) error {
-	query := `CALL Otchet(` + r.URL.Query().Get("YP") + `, "` + r.URL.Query().Get("SP") + `")`
+	//query := `CALL Otchet(` + r.URL.Query().Get("YP") + `, "` + r.URL.Query().Get("SP") + `")`
 
-	res, err := c.DataBase.Exec(query)
+	//res, err := c.DataBase.Exec(query)
 
-	return err
+	return nil
 }
 
 func (c *MainController) Req3(r *http.Request) (error, interface{}) {

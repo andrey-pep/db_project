@@ -23,7 +23,10 @@ var Server = &http.Server {
 	WriteTimeout: 10 * time.Second,
 }
 
+var globalSessions, _ = NewManager("gosessionid",3600)
+
 func main() {
+
 	http.HandleFunc("/", Login)
 	http.HandleFunc("/index", HandleIndex)
 	http.HandleFunc("/login", Login)
@@ -37,7 +40,6 @@ func main() {
 	http.HandleFunc("/inmarks", InsertMarks)
 	http.HandleFunc("/marks", NewMarks)
 	http.HandleFunc("/error", Error)
-
 	err := Server.ListenAndServe()
 	if err != nil {
 		panic(err)
@@ -45,7 +47,7 @@ func main() {
 }
 
 func Error (w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.ParseFiles("public/error.html"))
+	t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 	if err := t.Execute(w, ""); err != nil {
 		panic(err)
 	}
@@ -64,7 +66,7 @@ func NewMarks(w http.ResponseWriter, r *http.Request) {
 	MC.DataBase = DB
 
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -77,7 +79,7 @@ func NewMarks(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(p, &u)
 	if err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -85,13 +87,21 @@ func NewMarks(w http.ResponseWriter, r *http.Request) {
 	}
 	affected, err := MC.MarksInput(u)
 	if (affected != len(u) || err != nil) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
 		return	
 	}
-	http.Redirect(w, r, "inmarks?tt=" + u[0].GroupName, http.StatusMovedPermanently)
+	t := template.Must(template.ParseFiles("public/itsok.html", "public/helper.html"))
+	if err := t.Execute(w, ""); err != nil {
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
+		if err := t.Execute(w, ""); err != nil {
+			panic(err)
+		}
+		return
+	}
+	return
 
 }
 
@@ -108,7 +118,7 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 	MC.DataBase = DB
 
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -117,7 +127,7 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 
 	err, students := MC.SelectStudents(r)
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -128,13 +138,12 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 	output := PrepareForOut(reflect.ValueOf(students))
 	w.Header().Set("Content-Type", "text/html")
 	if err := t.Execute(w, output); err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
 		return
 	}
-
 	return
 
 }
@@ -170,7 +179,7 @@ func Procedure(w http.ResponseWriter, r *http.Request) {
 	MC.DataBase = DB
 	err, out := MC.Otchet()
 	if err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -182,7 +191,7 @@ func Procedure(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status := MC.MakeOtchet(r)
 		if status != nil {
-			t := template.Must(template.ParseFiles("public/error.html"))
+			t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
@@ -204,7 +213,7 @@ func CheckOtchet(w http.ResponseWriter, r *http.Request) {
 	MC.DataBase = DB
 	err, out := MC.Otchet()
 	if err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -223,7 +232,7 @@ func CheckOtchet(w http.ResponseWriter, r *http.Request) {
 	} else {
 		t := template.Must(template.ParseFiles("/public/otchet.html", "public/helper.html"))
 		if err := t.Execute(w, out); err != nil {
-			t := template.Must(template.ParseFiles("public/error.html"))
+			t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
@@ -252,7 +261,7 @@ func CheckUser(w http.ResponseWriter, r *http.Request, MC *MainController) bool 
 	if (MC.Login != "" && MC.Login != "" && MC.UsrPass != "") {
 		err, exists := MC.CheckIfUserExists()
 		if err != nil {
-			t := template.Must(template.ParseFiles("public/error.html"))
+			t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
@@ -260,7 +269,7 @@ func CheckUser(w http.ResponseWriter, r *http.Request, MC *MainController) bool 
 		if exists == true {
 			return true
 		} else {
-			t := template.Must(template.ParseFiles("public/nono.html"))
+			t := template.Must(template.ParseFiles("public/nono.html", "public/helper.html"))
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
@@ -275,7 +284,7 @@ func Enter (w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -283,16 +292,16 @@ func Enter (w http.ResponseWriter, r *http.Request) {
 	}
 	err = MC.SelectUser(r)
 	if err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
 		return
 	}
 	if MC.UsrGroup == "nonauth" {
-		t := template.Must(template.ParseFiles("public/noauth.html"))
+		t := template.Must(template.ParseFiles("public/noauth.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
-			t := template.Must(template.ParseFiles("public/error.html"))
+			t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 			if err := t.Execute(w, ""); err != nil {
 				panic(err)
 			}
@@ -300,7 +309,7 @@ func Enter (w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	t := template.Must(template.ParseFiles("public/index.html"))
+	t := template.Must(template.ParseFiles("public/index.html", "public/helper.html"))
 	expiration := time.Now().Add(365 * 24 * time.Hour)
 	hasher := md5.New()
 	hasher.Write([]byte(r.URL.Query().Get("password")))
@@ -311,9 +320,16 @@ func Enter (w http.ResponseWriter, r *http.Request) {
     http.SetCookie(w, &cookie1)
     http.SetCookie(w, &cookie2)
     http.SetCookie(w, &cookie3)
+    sid := globalSessions.SessionInit()
+    session := globalSessions.Sessions[sid]
+    session.SetValue(MC.Login, "login") 
+    session.SetValue(MC.UsrGroup, "userGroup")
+    session.SetValue(hashedPass, "userGroup")
+    cookie4 := http.Cookie{Name: "sid", Value: sid, Expires: expiration}
+    http.SetCookie(w, &cookie4)
 	w.Header().Set("Content-Type", "text/html")
 	if err := t.Execute(w, ""); err != nil {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -335,7 +351,7 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	MC.DataBase = DB
 
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -343,7 +359,7 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	out := reflect.ValueOf(MC).MethodByName(r.URL.Query().Get("action")).Call([]reflect.Value{reflect.ValueOf(r)})	//выполнение самого запроса, пришлось немного с рефлектом поебаца
 	if !out[0].IsNil() {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -373,7 +389,7 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 	MC := &MainController{UsrGroup: "nonauth"}
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}
@@ -393,7 +409,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	MC := &MainController{UsrGroup: "nonauth"}
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	if (err != nil || reflect.ValueOf(DB).IsNil()) {
-		t := template.Must(template.ParseFiles("public/error.html"))
+		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
 		if err := t.Execute(w, ""); err != nil {
 			panic(err)
 		}

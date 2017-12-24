@@ -56,7 +56,7 @@
 				var mark_td = tr.cells[6];
 				mark_td.innerHTML = '<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in3">';
 				mark_td.id = 'inp';
-				this.value = 'Добавить'
+				this.value = 'Добавить';
 			}
 		}
 	}
@@ -84,7 +84,7 @@ function sendm() {
 	xhttp.setRequestHeader("Content-type", "application/json");
 	xhttp.send(JSON.stringify(out));
 	if(xhttp.readyState==4){
-		location.reload();
+		document.body.innerHTML = xhttp.responseText;
 	}
 }
 </script>
