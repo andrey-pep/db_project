@@ -11,6 +11,7 @@ type Student struct {
 	LastName		string `db:"Last_Name"`
 	Subject         string
 	Thema           string 
+	Mark            *int
 }
 
 type ResultTwo struct {

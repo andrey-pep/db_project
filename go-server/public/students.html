@@ -25,9 +25,12 @@
 			<td align="center">{{$elem.Subject}}</td>
 			<td align="center">{{$elem.Thema}}</td>
 			<td align="center" id="inp">
-				<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in3">
+				{{ if $elem.Mark }} 
+					{{$elem.Mark}} <br> <input class="but" id="change" type="submit" value="Изменить" onclick="change(this, {{$elem.Mark}})">
+				{{ else }}
+					<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder="5" id="in3"> {{end}}
 			</td>
-			<td align="center" class="td2" id="input"><input class="but" id="el" type="submit" value="Добавить"></td>
+		<!--	<td align="center" class="td2" id="input"><input class="but" id="el" type="submit" value="Добавить"></td> -->
 			</tr></p>
 			{{ end }}
 	</tbody>
@@ -68,7 +71,7 @@ function sendm() {
 	var out = [];
 	for (var r=1; r<table.rows.length; r++) {
 		td1 = table.rows[r].cells[6]
-		if (td1.id === 'done') {
+		if (!isNaN(td1.getElementsByTagName('input')[0].value)) {
 			var person = {}
 			person.record_book_num = table.rows[r].cells[0].innerHTML;
 			person.birthdate = table.rows[r].cells[1].innerHTML;
@@ -76,8 +79,8 @@ function sendm() {
 			person.last_name = table.rows[r].cells[3].innerHTML
 			person.subject = table.rows[r].cells[4].innerHTML;
 			person.theme = table.rows[r].cells[5].innerHTML;
-			person.mark = table.rows[r].cells[6].innerHTML;
-			out.push(person)
+			person.mark = td1.getElementsByTagName('input')[0].value;
+			out.push(person);
 		}
 	}
 	xhttp.open("POST", "marks", false);
@@ -85,6 +88,16 @@ function sendm() {
 	xhttp.send(JSON.stringify(out));
 	if(xhttp.readyState==4){
 		document.body.innerHTML = xhttp.responseText;
+	}
+}
+
+function change(element, mark) {
+	td = element.parentElement
+	if (element.value === 'Изменить') {
+	td.innerHTML = '<input class="texti" name="theme" required type="text" pattern="[1-5]" placeholder=' + mark + ' id="in3"><br> <input class="but" id="send" type="submit" value="Отмена" onclick="change(this)"> <input type="hidden" name="action" value="">';
+	} else {
+		mark = td.getElementsByTagName('input')[0].placeholder;
+		td.innerHTML = mark + '<br> <input class="but" id="change" type="submit" value="Изменить" onclick="change(this, ' + mark + ')">';
 	}
 }
 </script>

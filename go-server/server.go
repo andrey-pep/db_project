@@ -59,7 +59,7 @@ func NewMarks(w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
@@ -111,7 +111,7 @@ func InsertMarks(w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
@@ -154,7 +154,7 @@ func IsTech(w http.ResponseWriter, r *http.Request) {
 	_, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	resp := CheckResp{false}
@@ -172,7 +172,7 @@ func Procedure(w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
@@ -206,7 +206,7 @@ func CheckOtchet(w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
@@ -257,25 +257,19 @@ func CheckCookies(cArr []*http.Cookie,MC *MainController) bool {
 }
 
 func CheckUser(w http.ResponseWriter, r *http.Request, MC *MainController) bool {
-	CheckCookies(r.Cookies(), MC)
-	if (MC.Login != "" && MC.Login != "" && MC.UsrPass != "") {
-		err, exists := MC.CheckIfUserExists()
-		if err != nil {
-			t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
-			if err := t.Execute(w, ""); err != nil {
-				panic(err)
-			}
-		}
-		if exists == true {
-			return true
-		} else {
-			t := template.Must(template.ParseFiles("public/nono.html", "public/helper.html"))
-			if err := t.Execute(w, ""); err != nil {
-				panic(err)
-			}
-		}
+	sid, err := r.Cookie("sid")
+	if err != nil {
+		return false
 	}
-	return false
+	session := globalSessions.CheckSession(sid.Value)
+	if session != nil {
+		MC.Login = session.GetValue("login").(string)
+		MC.UsrGroup = session.GetValue("userGroup").(string)
+		MC.UsrPass = session.GetValue("password").(string)
+		return true
+	} else {
+		return false
+	}
 }
 
 func Enter (w http.ResponseWriter, r *http.Request) {
@@ -324,7 +318,7 @@ func Enter (w http.ResponseWriter, r *http.Request) {
     session := globalSessions.Sessions[sid]
     session.SetValue(MC.Login, "login") 
     session.SetValue(MC.UsrGroup, "userGroup")
-    session.SetValue(hashedPass, "userGroup")
+    session.SetValue(hashedPass, "password")
     cookie4 := http.Cookie{Name: "sid", Value: sid, Expires: expiration}
     http.SetCookie(w, &cookie4)
 	w.Header().Set("Content-Type", "text/html")
@@ -344,7 +338,7 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 	err, DB := dbwork.Connect(MC.UsrGroup)
 	MC.DataBase = DB
 	if CheckUser(w, r, MC) == false {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 		return
 	}
 	err, DB = dbwork.Connect(MC.UsrGroup)	//коннект к базе, до этого нужно сделать авторизацию
@@ -357,6 +351,7 @@ func SelectRequest(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	out := reflect.ValueOf(MC).MethodByName(r.URL.Query().Get("action")).Call([]reflect.Value{reflect.ValueOf(r)})	//выполнение самого запроса, пришлось немного с рефлектом поебаца
 	if !out[0].IsNil() {
 		t := template.Must(template.ParseFiles("public/error.html", "public/helper.html"))
@@ -396,12 +391,12 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	MC.DataBase = DB
-	if CheckUser(w, r, MC) {
+	if !CheckUser(w, r, MC) {
 		t := template.Must(template.ParseFiles("public/index.html", "public/helper.html"))
 		w.Header().Set("Content-Type", "text/html")
 		t.Execute(w, "")
 	} else {
-		http.Redirect(w, r, "login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "login", http.StatusSeeOther)
 	}
 }
 
@@ -429,12 +424,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Exit(w http.ResponseWriter, r *http.Request) {
 		expiration := time.Now().Add(0)
-    	cookie1 := http.Cookie{Name: "ln", Value: "", Expires: expiration}
-		cookie2 := http.Cookie{Name: "ud", Value: "", Expires: expiration}
-		cookie3 := http.Cookie{Name: "ps", Value: "", Expires: expiration}
+    	sid, _ := r.Cookie("sid")
+    	globalSessions.DeleteSession(sid.Value)
+    	cookie1 := http.Cookie{Name: "sid", Value: "", Expires: expiration}
     	http.SetCookie(w, &cookie1)
-    	http.SetCookie(w, &cookie2)
-    	http.SetCookie(w, &cookie3)
 		t := template.Must(template.ParseFiles("public/login.html"))
 		w.Header().Set("Content-Type", "text/html")
 		t.Execute(w, "")

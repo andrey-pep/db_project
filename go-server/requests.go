@@ -48,9 +48,9 @@ func (c *MainController) Otchet() (error, []*models.Otchet) {
 }
 
 func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Student) {
-	Select := `Select student.Record_book_num, Birthday, Group_name, Last_Name, subject, project.thema FROM student JOIN protocol_string USING(Record_book_num)
+	Select := `Select student.Record_book_num, Birthday, Group_name, Last_Name, subject, project.thema, protocol_string.mark FROM student JOIN protocol_string USING(Record_book_num)
 		JOIN project USING(pr_id)
-		Where Group_Name = ? and mark IS NULL`
+		Where Group_Name = ?`
 	rows, err := c.DataBase.Query(Select, r.URL.Query().Get("g_index"))
 	if err != nil {
 		return err, nil
@@ -58,7 +58,7 @@ func (c *MainController) SelectStudents(r *http.Request) (error, []*models.Stude
 	results := make([]*models.Student, 0)
 	for rows.Next() {
 		res := new(models.Student)
-		err := rows.Scan(&res.RecordBookNum, &res.Birthday, &res.GroupName, &res.LastName, &res.Subject, &res.Thema)
+		err := rows.Scan(&res.RecordBookNum, &res.Birthday, &res.GroupName, &res.LastName, &res.Subject, &res.Thema, &res.Mark)
 		if err != nil {
 			return err, nil
 		}
